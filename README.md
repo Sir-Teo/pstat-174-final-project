@@ -1,16 +1,35 @@
-### Abstract
+<!--
+  md_document:
+    variant: markdown_github
+-->
+
+## Abstract
+
+The hospitality industry is an important composition of America’s GPA,
+generating more than 500 billion dollars each year. In this forecasting
+assignment, we are interested in forcasting the number of employees in
+the hospitality industry. This is important because low number of
+employees implies high unemployment rate, which is not a good sign for
+overall economy.
+
+In this forecasting assignment, we selected a
+SARIMA (5,1,2) × (0,1,1)<sub>12</sub> model to forecast the number of
+employees in the Hospitality Industry. By comparing the forecasting
+values with the actual values, we found that the model overestimated the
+number of employees, with increasing gaps as time progreeses. We arrived
+at a conclusion that this model may be improved by using only data after
+2010.
 
 ## Introduction
 
 ### The Hospitality Industry
 
-The **hospitality industry**, using the definition from wikipedia, is a
-broad category of fields within the service industry that includes
-lodging, food and drink service, event planning, theme parks, travel and
-tourism. It includes hotels, tourism agencies, restaurants and bars. As
-of 2020,, the United States Department of Labor Standard Industrial
-Classification (SIC) defines the hospitality industry more broadly,
-including
+The **hospitality industry** is a broad category of fields within the
+service industry that includes lodging, food and drink service, event
+planning, theme parks, travel and tourism. It includes hotels, tourism
+agencies, restaurants and bars. As of 2020,, the United States
+Department of Labor Standard Industrial Classification (SIC) defines the
+hospitality industry more broadly, including
 
 -   Hotels and Motels
 -   Eating and Drinking Places
@@ -46,7 +65,17 @@ PSTAT 174/274 class including
 -   Diagnostic Checking
 -   Forecasting
 
+### Software
+
+This project was worked with R version 4.2.0 (2022-02-22)
+
 ### Results and Conclusions
+
+Wwe selected a SARIMA (5,1,2) × (0,1,1)<sub>12</sub> model to forecast
+the number of employees in the Hospitality Industry. By comparing the
+forecasting values with the actual values, we found that the model
+overestimated the number of employees, with increasing gaps as time
+progreeses.
 
 ## The Forcasting
 
@@ -485,13 +514,13 @@ plot.roots(NULL,polyroot(c(1, -0.9494,0.2416)), main="Model 1, roots of ma part,
 Clearly, all MA (seasonal and non seasonal) roots are outside of unit
 circle, so the model is invertible.
 
-##### Analyzing the Residues
+##### Analyzing the residuals
 
-We first look at the histogram of the Residues
+We first look at the histogram of the residuals
 
 ``` r
 model1_res <- residuals(model1)
-hist(model1_res,density=20,breaks=20, col="blue", xlab="Histogram of Residues", prob=TRUE)
+hist(model1_res,density=20,breaks=20, col="blue", xlab="Histogram of residuals", prob=TRUE)
 m1 <- mean(model1_res)
 std1 <- sqrt(var(model1_res))
 curve(dnorm(x,m1,std1), add=TRUE )
@@ -500,7 +529,7 @@ curve(dnorm(x,m1,std1), add=TRUE )
 ![](pstat174-final-project_files/figure-markdown_github/unnamed-chunk-21-1.png)
 
 Which looks pretty normal, despite a larger peak at the center. Next we
-will plot out the Residues
+will plot out the residuals
 
 ``` r
 mean(model1_res)
@@ -519,7 +548,7 @@ abline(h=mean(model1_res), col="blue")
 
 The mean is just 0.25 which is very close to 0.
 
-Now we plot out a QQ Plot for the Residues
+Now we plot out a QQ Plot for the residuals
 
 ``` r
 qqnorm(model1_res,main= "Normal Q-Q Plot for Model 1")
@@ -534,7 +563,7 @@ We see that from the above plots, **there is no trend, and no visible
 change of variance, and no seasonality, and the sample mean = 0.25 is
 almost zero. The histogram and the QQ plot looks okay.**
 
-Now, we will plot out ACF and PACF of the Residues
+Now, we will plot out ACF and PACF of the residuals
 
 ``` r
 acf(model1_res, lag.max=40)
@@ -665,13 +694,13 @@ plot.roots(NULL,polyroot(c(1, -0.5788,-0.1315)), main="Model 1, roots of MA part
 Clearly, all MA roots are outside of unit circle, so the model is
 invertible.
 
-##### Analyzing the Residues
+##### Analyzing the residuals
 
-We first look at the histogram of the Residues
+We first look at the histogram of the residuals
 
 ``` r
 model2_res <- residuals(model2)
-hist(model2_res,density=20,breaks=20, col="blue", xlab="Histogram of Residues", prob=TRUE)
+hist(model2_res,density=20,breaks=20, col="blue", xlab="Histogram of residuals", prob=TRUE)
 m1 <- mean(model2_res)
 std1 <- sqrt(var(model2_res))
 curve(dnorm(x,m1,std1), add=TRUE )
@@ -680,7 +709,7 @@ curve(dnorm(x,m1,std1), add=TRUE )
 ![](pstat174-final-project_files/figure-markdown_github/unnamed-chunk-33-1.png)
 
 Which looks pretty normal, despite a larger peak at the center. Next we
-will plot out the Residues
+will plot out the residuals
 
 ``` r
 mean(model2_res)
@@ -699,7 +728,7 @@ abline(h=mean(model2_res), col="blue")
 
 The mean is just 0.135 which is very close to 0.
 
-Now we plot out a QQ Plot for the Residues
+Now we plot out a QQ Plot for the residuals
 
 ``` r
 qqnorm(model2_res,main= "Normal Q-Q Plot for Model 1")
@@ -714,7 +743,7 @@ We see that from the above plots, **there is no trend, and no visible
 change of variance, and no seasonality, and the sample mean = 0.13 is
 almost zero. The histogram and the QQ plot looks okay.**
 
-Now, we will plot out ACF and PACF of the Residues
+Now, we will plot out ACF and PACF of the residuals
 
 ``` r
 acf(model2_res, lag.max=40)
@@ -730,7 +759,7 @@ pacf(model2_res, lag.max=40)
 
 All acf and pacf of residuals **are within confidence intervals**
 (except at lag 12 and 24), this means that there is seasonality in the
-residues.
+residuals.
 
 Now we will check if this model can pass the tests.
 
@@ -892,6 +921,305 @@ points((length(employees.training)+1):(length(employees.training)+24),  pred.tr$
 As we can see, the forecast values are now black circles, and the red
 line is the true values. We see that **the test set is within the
 confidence interval**. Even though that the model constantly
-**underestimated** the values in the forecast.
+**overestimated** the values in the forecast.
 
 ### Spectral Analysis
+
+#### Periodogram of training data
+
+Drawing a periodogram may tell the period of the original data.
+
+``` r
+require(TSA)
+```
+
+    ## Loading required package: TSA
+
+    ## Registered S3 methods overwritten by 'TSA':
+    ##   method       from    
+    ##   fitted.Arima forecast
+    ##   plot.Arima   forecast
+
+    ## 
+    ## Attaching package: 'TSA'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     acf, arima
+
+    ## The following object is masked from 'package:utils':
+    ## 
+    ##     tar
+
+``` r
+periodogram(employees)
+abline(h=0)
+axis(1,at=c(0.0033,0.084))
+```
+
+![](pstat174-final-project_files/figure-markdown_github/unnamed-chunk-45-1.png)
+
+And we observe from the periodogram that there is a spike at
+0.084 ≈ 1/12, indicating a period of 12 month (1 year). Another spike
+occur at 0.0033 ≈ 303 months, which is 25.25 years. This confirms that
+we should difference at at period of 12.
+
+#### Periodogram of residuals
+
+We may also plot out the periodogram of residuals.
+
+``` r
+periodogram(model1_res)
+abline(h=0)
+```
+
+![](pstat174-final-project_files/figure-markdown_github/unnamed-chunk-46-1.png)
+
+We see that there is no predominant frequencies
+
+#### Fisher’s Test
+
+Fisher’s test enables one to test the data for the presence of hidden
+periodicities with unspecified frequency
+
+``` r
+library(GeneCycle)
+```
+
+    ## Loading required package: longitudinal
+
+    ## Loading required package: corpcor
+
+    ## Loading required package: fdrtool
+
+    ## 
+    ## Attaching package: 'GeneCycle'
+
+    ## The following object is masked from 'package:TSA':
+    ## 
+    ##     periodogram
+
+    ## The following object is masked from 'package:forecast':
+    ## 
+    ##     is.constant
+
+``` r
+fisher.g.test(model1_res)
+```
+
+    ## [1] 0.445354
+
+So the model passes the Fisher’s Test, and we may conclude that there is
+no hidden periodicities with unspecified frequency
+
+#### Kolmogorov-Smirnov test for cumulative periodogram
+
+We apply the Kolmogorov-Smirnov test to residuals to assess whether
+residuals are Gaussian white noise
+
+``` r
+cpgram(model1_res,main="Kolmogorov-Smirnov test")
+```
+
+![](pstat174-final-project_files/figure-markdown_github/unnamed-chunk-48-1.png)
+
+And clearly it passes the kolmogorov-Smirnov test, so the residuals are
+Gaussian white noise.
+
+## Conclusion
+
+In this forecasting assignment, we selected a
+SARIMA (5,1,2) × (0,1,1)<sub>12</sub> model to forecast the number of
+employees in the Hospitality Industry. By comparing the forecasting
+values with the actual values, we found that the model overestimated the
+number of employees, with increasing gaps as time progreeses.
+
+### What to do next?
+
+We see that there is some inaccuracy in forecasting. We can improve the
+forecasting accuracy by training the model **using only the data after
+2010**, the reason for doing this is
+
+-   There was a sequence of anomaly data between 2008 and 2009, which
+    brings bias to the model.
+-   The time series data looks fairly consistent after 2010
+
+### Math Formulas Used
+
+#### Confidence interval
+
+An approximate confidence interval for *μ*<sub>*X*</sub> is
+
+$$
+\\left(\\bar{X}\_n-1.96 v^{1 / 2} / \\sqrt{n}, \\bar{X}\_n+1.96 v^{1 / 2} / \\sqrt{n}\\right)
+$$
+
+#### Residuals
+
+$$
+\\hat{W}\_t \\equiv \\hat{W}\_t(\\underline{\\hat{\\phi}}, \\underline{\\hat{\\theta}})=\\left(X_t-\\hat{X}\_t(\\underline{\\hat{\\phi}}, \\underline{\\hat{\\theta}})\\right) /\\left(r\_{t-1}(\\underline{\\hat{\\phi}}, \\underline{\\hat{\\theta}})\\right)^{1 / 2}, t=1, \\ldots, n,
+$$
+
+where $(\\underline{\\hat{\\phi}}, \\underline{\\hat{\\theta}})$ are
+MLEs of $(\\underline{\\phi}, \\underline{\\theta})$ and
+$\\hat{X}\_t(\\underline{\\hat{\\phi}}, \\underline{\\hat{\\theta}}) \\equiv \\hat{X}\_t$
+is the one-step ahead prediction of *X*<sub>*t*</sub> based on the
+chosen model.
+
+#### Ljung Box Test
+
+$$
+\\tilde{Q}\_W=n(n+2) \\sum\_{j=1}^h \\hat{\\rho}\_{\\hat{W}}^2(j) /(n-j) \\sim \\chi^2(h-p-q),
+$$
+
+#### McLeod Li Test
+
+$$
+\\hat{\\rho}\_{\\hat{W} \\hat{W}}(h)=\\sum\_{t=1}^{n-h}\\left(\\hat{W}\_t^2-\\bar{W}^2\\right)\\left(\\hat{W}\_{t+h}^2-\\bar{W}^2\\right) / \\sum\_{t=1}^n\\left(\\hat{W}\_t^2-\\bar{W}^2\\right)^2, \\quad h=1,2, \\ldots
+$$
+
+where $\\bar{W}^2=(1 / n) \\sum\_{t=1}^n \\hat{W}\_t^2$.
+
+## References
+
+1.  What Is the Hospitality Industry? Your Complete Guide
+    <https://www.cvent.com/en/blog/hospitality/what-is-the-hospitality-industry>
+
+2.  Hospitality Employees Time Series
+    Dataset<https://www.kaggle.com/datasets/gabrielsantello/hospitality-employees-time-series-dataset/code>
+
+3.  Class Notes and Powerpoints
+
+## Appendix
+
+``` r
+setwd("/Users/teo/Desktop/pstat-174-final-project")
+set.seed(1205)
+hos <- read.csv("data/HospitalityEmployees.csv")
+employees <- hos$Employees
+nt <- length(employees)
+tsdat <- ts(employees, start = c(1990,1), end = c(2018,12), frequency = 12)
+ts.plot(tsdat, main = "Raw Data")
+abline(h=mean(employees), col="blue")
+employees.training <- employees[c(1:323)]
+employees.test <- employees[c(324:348)]
+plot.ts(employees.training)
+fit <- lm(employees.training ~ as.numeric(1:length(employees.training)))
+abline(fit, col="red")
+abline(h=mean(employees), col="blue")
+hist(employees.training, col="light blue", xlab="", main="histogram; employee data")
+acf(employees.training,lag.max=40, main="ACF of the Airpass Data")
+library(ggplot2)
+library(ggfortify)
+y <- ts(employees.training, frequency = 12)
+decomp <- decompose(y)
+plot(decomp)
+var(employees.training)[1]
+employees_lag12 <- diff(employees.training,lag = 12)
+plot.ts(employees_lag12, main="U_t differenced at lag 12")
+fit <- lm(employees_lag12 ~ as.numeric(1:length(employees_lag12)))
+abline(fit, col="red")
+abline(h=mean(employees_lag12), col="blue")
+var(employees_lag12)
+acf(employees_lag12, lag.max=40, main="ACF of the U_t, differenced at lag 12")
+employees_stat <- diff(employees_lag12,lag = 1)
+plot.ts(employees_stat, main="U_t differenced at lag 12 & lag 1")
+fit <- lm(employees_stat ~ as.numeric(1:length(employees_stat)))
+abline(fit, col="red")
+abline(h=mean(employees_stat), col="blue")
+var(employees_stat)
+hist(employees_stat, density=20,breaks=20, col="blue", xlab="", prob=TRUE)
+m<-mean(employees_stat)
+std<- sqrt(var(employees_stat))
+curve( dnorm(x,m,std), add=TRUE )
+acf(employees_stat, lag.max=40, main="ACF of the U_t, differenced at lags 12 and 1")
+pacf(employees_stat, lag.max=40, main="PACF of the U_t, differenced at lags 12 and 1")
+library(qpcR)
+print("p d q P D Q")
+for (p in c(0,2,5)){
+    for (d in c(1)){
+        for (q in c(0,2,5)){
+            for (P in c(0,1)){
+                for (D in c(1)){
+                    for (Q in c(0,1)){
+                        print(c(p,d,q,P,D,Q))
+                        print(AICc(arima(employees.training,order = c(p,d,q),seasonal = list(order = c(P,D,Q), period = 12), method="ML"))) 
+                    }
+                }
+            }
+        }
+    }
+}
+model1 <- arima(employees.training,order = c(5,1,2),seasonal = list(order = c(0,1,1), period = 12), method="ML")
+model1
+AICc(model1)
+AICc(arima(employees.training,order = c(5,1,2),seasonal = list(order = c(0,1,1), period = 12), method="ML",fixed= c(NA,0,0,0,0,NA,0,NA)))
+model2 <- arima(employees.training,order = c(2,1,2),seasonal = list(order = c(1,1,0), period = 12), method="ML")
+model2
+AICc(model2)
+AICc(arima(employees.training,order = c(2,1,2),seasonal = list(order = c(1,1,0), period = 12),fixed = c(NA,NA,0,0,NA), method="ML"))
+source("plot.roots.R")
+plot.roots(NULL,polyroot(c(1, -0.8398, 0.0710, 0.0136,-0.0108,-0.0732)), main="Model 1, roots of AR part, nonseasonal ")
+plot.roots(NULL,polyroot(c(1, -0.9494,0.2416)), main="Model 1, roots of ma part, nonseasonal ")
+model1_res <- residuals(model1)
+hist(model1_res,density=20,breaks=20, col="blue", xlab="Histogram of residuals", prob=TRUE)
+m1 <- mean(model1_res)
+std1 <- sqrt(var(model1_res))
+curve(dnorm(x,m1,std1), add=TRUE )
+mean(model1_res)
+plot.ts(model1_res)
+fit_res_1 <- lm(model1_res ~ as.numeric(1:length(model1_res))) 
+abline(fit_res_1, col="red")
+abline(h=mean(model1_res), col="blue")
+qqnorm(model1_res,main= "Normal Q-Q Plot for Model 1")
+qqline(model1_res,col="blue")
+acf(model1_res, lag.max=40)
+pacf(model1_res, lag.max=40)
+shapiro.test(model1_res)
+Box.test(model1_res, lag = 12, type = c("Box-Pierce"), fitdf = 7)
+Box.test(model1_res, lag = 12, type = c("Ljung-Box"), fitdf = 7)
+Box.test((model1_res)^2, lag = 12, type = c("Ljung-Box"), fitdf = 0)
+ar(model1_res, aic = TRUE, order.max = NULL, method = c("yule-walker"))
+plot.roots(NULL,polyroot(c(1, -0.5338, -0.3358)), main="Model 1, roots of AR part, nonseasonal ")
+plot.roots(NULL,polyroot(c(1, -0.5788,-0.1315)), main="Model 1, roots of MA part, nonseasonal ")
+model2_res <- residuals(model2)
+hist(model2_res,density=20,breaks=20, col="blue", xlab="Histogram of residuals", prob=TRUE)
+m1 <- mean(model2_res)
+std1 <- sqrt(var(model2_res))
+curve(dnorm(x,m1,std1), add=TRUE )
+mean(model2_res)
+plot.ts(model2_res)
+fit_res_1 <- lm(model2_res ~ as.numeric(1:length(model2_res))) 
+abline(fit_res_1, col="red")
+abline(h=mean(model2_res), col="blue")
+qqnorm(model2_res,main= "Normal Q-Q Plot for Model 1")
+qqline(model2_res,col="blue")
+acf(model2_res, lag.max=40)
+pacf(model2_res, lag.max=40)
+shapiro.test(model2_res)
+Box.test(model2_res, lag = 12, type = c("Box-Pierce"), fitdf = 4)
+Box.test(model2_res, lag = 12, type = c("Ljung-Box"), fitdf = 4)
+Box.test((model2_res)^2, lag = 12, type = c("Ljung-Box"), fitdf = 0)
+ar(model2_res, aic = TRUE, order.max = NULL, method = c("yule-walker"))
+library(forecast)
+pred.tr <- predict(model1, n.ahead = 24)
+U.tr= pred.tr$pred + 2*pred.tr$se
+L.tr= pred.tr$pred - 2*pred.tr$se
+ts.plot(employees.training, xlim=c(1,length(employees.training)+12), ylim = c(min(employees.training),max(U.tr)))
+lines(U.tr, col="blue", lty="dashed")
+lines(L.tr, col="blue", lty="dashed")
+points((length(employees.training)+1):(length(employees.training)+24), pred.tr$pred, col="red")
+ts.plot(employees, xlim = c(240,length(employees.training)+24), ylim = c(1400,max(U.tr)), col="red")
+lines(U.tr, col="blue", lty="dashed")
+lines(L.tr, col="blue", lty="dashed")
+points((length(employees.training)+1):(length(employees.training)+24),  pred.tr$pred , col="black")
+require(TSA)
+periodogram(employees)
+abline(h=0)
+axis(1,at=c(0.0033,0.084))
+periodogram(model1_res)
+abline(h=0)
+library(GeneCycle)
+fisher.g.test(model1_res)
+cpgram(model1_res,main="Kolmogorov-Smirnov test")
+```
