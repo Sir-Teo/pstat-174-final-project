@@ -3,17 +3,27 @@ title: "Forcasting the California Hospitality Industry Employees"
 author: "Teo Zeng"
 date: "`r Sys.Date()`"
 output:
-  md_document:
-    variant: markdown_github
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
-### Abstract 
+<!--
+  md_document:
+    variant: markdown_github
+-->
+
+## Abstract 
+
+The hospitality industry is an important composition of America's GPA, generating more than 500 billion dollars each year. In this forecasting assignment, we are interested in forcasting the number of employees in the hospitality industry. This is important because low number of employees implies high unemployment rate, which is not a good sign for overall economy.
+
+In this forecasting assignment, we selected a $\operatorname{SARIMA}(5,1,2)\times(0,1,1)_{12}$ model to forecast the number of employees in the Hospitality Industry. By comparing the forecasting values with the actual values, we found that the model overestimated the number of employees, with increasing gaps as time progreeses. We arrived at a conclusion that this model may be improved by using only data after 2010.
 
 ## Introduction
 
 ### The Hospitality Industry
 
-The **hospitality industry**, using the definition from wikipedia, is a broad category of fields within the service industry that includes lodging, food and drink service, event planning, theme parks, travel and tourism. It includes hotels, tourism agencies, restaurants and bars. As of 2020,, the United States Department of Labor Standard Industrial Classification (SIC) defines the hospitality industry more broadly, including
+The **hospitality industry** is a broad category of fields within the service industry that includes lodging, food and drink service, event planning, theme parks, travel and tourism. It includes hotels, tourism agencies, restaurants and bars. As of 2020,, the United States Department of Labor Standard Industrial Classification (SIC) defines the hospitality industry more broadly, including
 
 - Hotels and Motels
 - Eating and Drinking Places
@@ -39,7 +49,13 @@ In the entire process of forcasting, I used techniques taught in my PSTAT 174/27
 - Diagnostic Checking
 - Forecasting
 
+### Software
+
+This project was worked with R version 4.2.0 (2022-02-22)
+
 ### Results and Conclusions
+
+Wwe selected a $\operatorname{SARIMA}(5,1,2)\times(0,1,1)_{12}$ model to forecast the number of employees in the Hospitality Industry. By comparing the forecasting values with the actual values, we found that the model overestimated the number of employees, with increasing gaps as time progreeses.
 
 
 ## The Forcasting 
@@ -274,23 +290,21 @@ Clearly, all AR roots are outside of unit circle, but we also have $|\Phi_1| <1$
 plot.roots(NULL,polyroot(c(1, -0.9494,0.2416)), main="Model 1, roots of ma part, nonseasonal ")
 ```
 
-
-
 Clearly, all MA (seasonal and non seasonal) roots are outside of unit circle, so the model is invertible.
 
-##### Analyzing the Residues
+##### Analyzing the residuals
 
-We first look at the histogram of the Residues
+We first look at the histogram of the residuals
 
 ```{r}
 model1_res <- residuals(model1)
-hist(model1_res,density=20,breaks=20, col="blue", xlab="Histogram of Residues", prob=TRUE)
+hist(model1_res,density=20,breaks=20, col="blue", xlab="Histogram of residuals", prob=TRUE)
 m1 <- mean(model1_res)
 std1 <- sqrt(var(model1_res))
 curve(dnorm(x,m1,std1), add=TRUE )
 ```
 
-Which looks pretty normal, despite a larger peak at the center. Next we will plot out the Residues
+Which looks pretty normal, despite a larger peak at the center. Next we will plot out the residuals
 
 ```{r}
 mean(model1_res)
@@ -302,7 +316,7 @@ abline(h=mean(model1_res), col="blue")
 
 The mean is just 0.25 which is very close to 0. 
 
-Now we plot out a QQ Plot for the Residues
+Now we plot out a QQ Plot for the residuals
 
 ```{r}
 qqnorm(model1_res,main= "Normal Q-Q Plot for Model 1")
@@ -313,7 +327,7 @@ which aligns quite well on a straight line.
 
 We see that from the above plots, **there is no trend, and no visible change of variance, and no seasonality, and the sample mean = 0.25 is almost zero. The histogram and the QQ plot looks okay.**
 
-Now, we will plot out ACF and PACF of the Residues
+Now, we will plot out ACF and PACF of the residuals
 
 ```{r}
 acf(model1_res, lag.max=40)
@@ -401,19 +415,19 @@ plot.roots(NULL,polyroot(c(1, -0.5788,-0.1315)), main="Model 1, roots of MA part
 
 Clearly, all MA roots are outside of unit circle, so the model is invertible.
 
-##### Analyzing the Residues
+##### Analyzing the residuals
 
-We first look at the histogram of the Residues
+We first look at the histogram of the residuals
 
 ```{r}
 model2_res <- residuals(model2)
-hist(model2_res,density=20,breaks=20, col="blue", xlab="Histogram of Residues", prob=TRUE)
+hist(model2_res,density=20,breaks=20, col="blue", xlab="Histogram of residuals", prob=TRUE)
 m1 <- mean(model2_res)
 std1 <- sqrt(var(model2_res))
 curve(dnorm(x,m1,std1), add=TRUE )
 ```
 
-Which looks pretty normal, despite a larger peak at the center. Next we will plot out the Residues
+Which looks pretty normal, despite a larger peak at the center. Next we will plot out the residuals
 
 ```{r}
 mean(model2_res)
@@ -425,7 +439,7 @@ abline(h=mean(model2_res), col="blue")
 
 The mean is just 0.135 which is very close to 0. 
 
-Now we plot out a QQ Plot for the Residues
+Now we plot out a QQ Plot for the residuals
 
 ```{r}
 qqnorm(model2_res,main= "Normal Q-Q Plot for Model 1")
@@ -436,7 +450,7 @@ which aligns quite well on a straight line.
 
 We see that from the above plots, **there is no trend, and no visible change of variance, and no seasonality, and the sample mean = 0.13 is almost zero. The histogram and the QQ plot looks okay.**
 
-Now, we will plot out ACF and PACF of the Residues
+Now, we will plot out ACF and PACF of the residuals
 
 ```{r}
 acf(model2_res, lag.max=40)
@@ -446,7 +460,7 @@ acf(model2_res, lag.max=40)
 pacf(model2_res, lag.max=40)
 ```
 
-All acf and pacf of residuals **are within confidence intervals** (except at lag 12 and 24), this means that there is seasonality in the residues.
+All acf and pacf of residuals **are within confidence intervals** (except at lag 12 and 24), this means that there is seasonality in the residuals.
 
 Now we will check if this model can pass the tests.
 
@@ -536,8 +550,111 @@ lines(L.tr, col="blue", lty="dashed")
 points((length(employees.training)+1):(length(employees.training)+24),  pred.tr$pred , col="black")
 ```
 
-As we can see, the forecast values are now black circles, and the red line is the true values. We see that **the test set is within the confidence interval**. Even though that the model constantly **underestimated** the values in the forecast.
+As we can see, the forecast values are now black circles, and the red line is the true values. We see that **the test set is within the confidence interval**. Even though that the model constantly **overestimated** the values in the forecast.
 
 
 ### Spectral Analysis
 
+#### Periodogram of training data
+
+Drawing a periodogram may tell the period of the original data.
+
+```{r}
+require(TSA)
+periodogram(employees)
+abline(h=0)
+axis(1,at=c(0.0033,0.084))
+```
+
+And we observe from the periodogram that there is a spike at $0.084 \approx 1/12$, indicating a period of 12 month (1 year). Another spike occur at $0.0033 \approx 303$ months, which is 25.25 years. This confirms that we should difference at at period of 12.
+
+#### Periodogram of residuals
+
+We may also plot out the periodogram of residuals.
+
+```{r}
+periodogram(model1_res)
+abline(h=0)
+```
+
+We see that there is no predominant frequencies
+
+#### Fisher's Test
+
+Fisher's test enables one to test the data for the presence of hidden periodicities with unspecified frequency
+
+```{r}
+library(GeneCycle)
+fisher.g.test(model1_res)
+```
+
+So the model passes the Fisher's Test, and we may conclude that there is no hidden periodicities with unspecified frequency
+
+####  Kolmogorov-Smirnov test for cumulative periodogram
+
+We apply the Kolmogorov-Smirnov test to residuals to assess whether residuals are Gaussian white noise
+
+```{r}
+cpgram(model1_res,main="Kolmogorov-Smirnov test")
+```
+
+And clearly it passes the kolmogorov-Smirnov test, so the residuals are Gaussian white noise.
+
+## Conclusion
+
+In this forecasting assignment, we selected a $\operatorname{SARIMA}(5,1,2)\times(0,1,1)_{12}$ model to forecast the number of employees in the Hospitality Industry. By comparing the forecasting values with the actual values, we found that the model overestimated the number of employees, with increasing gaps as time progreeses.
+
+### What to do next?
+
+We see that there is some inaccuracy in forecasting. We can improve the forecasting accuracy by training the model **using only the data after 2010**, the reason for doing this is 
+
+- There was a sequence of anomaly data between 2008 and 2009, which brings bias to the model.
+- The time series data looks fairly consistent after 2010
+
+
+### Math Formulas Used
+
+#### Confidence interval
+
+An approximate confidence interval for $\mu_X$ is 
+
+$$
+\left(\bar{X}_n-1.96 v^{1 / 2} / \sqrt{n}, \bar{X}_n+1.96 v^{1 / 2} / \sqrt{n}\right)
+$$
+
+#### Residuals
+
+$$
+\hat{W}_t \equiv \hat{W}_t(\underline{\hat{\phi}}, \underline{\hat{\theta}})=\left(X_t-\hat{X}_t(\underline{\hat{\phi}}, \underline{\hat{\theta}})\right) /\left(r_{t-1}(\underline{\hat{\phi}}, \underline{\hat{\theta}})\right)^{1 / 2}, t=1, \ldots, n,
+$$
+
+where $(\underline{\hat{\phi}}, \underline{\hat{\theta}})$ are MLEs of $(\underline{\phi}, \underline{\theta})$ and $\hat{X}_t(\underline{\hat{\phi}}, \underline{\hat{\theta}}) \equiv \hat{X}_t$ is the one-step ahead prediction of $X_t$ based on the chosen model.
+
+
+#### Ljung Box Test
+
+$$
+\tilde{Q}_W=n(n+2) \sum_{j=1}^h \hat{\rho}_{\hat{W}}^2(j) /(n-j) \sim \chi^2(h-p-q),
+$$
+
+#### McLeod Li Test
+
+$$
+\hat{\rho}_{\hat{W} \hat{W}}(h)=\sum_{t=1}^{n-h}\left(\hat{W}_t^2-\bar{W}^2\right)\left(\hat{W}_{t+h}^2-\bar{W}^2\right) / \sum_{t=1}^n\left(\hat{W}_t^2-\bar{W}^2\right)^2, \quad h=1,2, \ldots
+$$
+
+where $\bar{W}^2=(1 / n) \sum_{t=1}^n \hat{W}_t^2$.
+
+
+## References
+
+1. What Is the Hospitality Industry? Your Complete Guide [https://www.cvent.com/en/blog/hospitality/what-is-the-hospitality-industry](https://www.cvent.com/en/blog/hospitality/what-is-the-hospitality-industry)
+
+2. Hospitality Employees Time Series Dataset[https://www.kaggle.com/datasets/gabrielsantello/hospitality-employees-time-series-dataset/code](https://www.kaggle.com/datasets/gabrielsantello/hospitality-employees-time-series-dataset/code)
+
+3. Class Notes and Powerpoints
+
+## Appendix
+
+```{r appendix, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
