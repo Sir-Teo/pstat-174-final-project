@@ -1,0 +1,543 @@
+---
+title: "Forcasting the California Hospitality Industry Employees"
+author: "Teo Zeng"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+### Abstract 
+
+## Introduction
+
+### The Hospitality Industry
+
+The **hospitality industry**, using the definition from wikipedia, is a broad category of fields within the service industry that includes lodging, food and drink service, event planning, theme parks, travel and tourism. It includes hotels, tourism agencies, restaurants and bars. As of 2020,, the United States Department of Labor Standard Industrial Classification (SIC) defines the hospitality industry more broadly, including
+
+- Hotels and Motels
+- Eating and Drinking Places
+- Arrangement of Passenger Transportation like travel agencies
+
+The entire industry worth more than 500 billion dollars. Thus it is important to make a meaningful forcast to its components and learn insights about it. Therefore, I would dedicate this project to forcast **the total number of employees across time**.
+
+### The Dataset.
+
+I obtained this dataset from [Kaggle](https://www.kaggle.com/datasets/gabrielsantello/hospitality-employees-time-series-dataset/code). This is a simple dataset consisting of just two columns, the first column is ```Date```, which takes record monthly from January 1st, 1990 to December 1st, 2018. The second column is the ```# Employees```, which is the Average of employees each month (in thousands). There are a total of 348 valid rows.
+
+### Techniques
+
+In the entire process of forcasting, I used techniques taught in my PSTAT 174/274 class including
+
+- Visualization techniques
+- transformation 
+- differencing
+- Model identification 
+- acf/pacf discussion
+- Model estimation
+- Check of stationarity/invertibility 
+- Diagnostic Checking
+- Forecasting
+
+### Results and Conclusions
+
+
+## The Forcasting 
+
+### Plot and analyze the time series.
+
+We will first set the working directory and load the dataset 
+
+```{r}
+setwd("/Users/teo/Desktop/pstat-174-final-project")
+set.seed(1205)
+```
+
+```{r}
+hos <- read.csv("data/HospitalityEmployees.csv")
+employees <- hos$Employees
+nt <- length(employees)
+tsdat <- ts(employees, start = c(1990,1), end = c(2018,12), frequency = 12)
+ts.plot(tsdat, main = "Raw Data")
+abline(h=mean(employees), col="blue")
+```
+
+Some immediate obseravtion of this dataset is that:
+
+- there is a linearity in the dataset
+- there is also an obvious seasonality
+- We have relatively constant variance (ignoring the abnormality in 2008) and a non-constant mean
+
+more specifically, we witness **a drop of employees in 2008-2009**, which is probably due to the global economic crisis that took place in 2008.
+
+Now we partition the data into a training and testing set. And we leave 24 data points for verification.
+
+```{r}
+employees.training <- employees[c(1:323)]
+employees.test <- employees[c(324:348)]
+plot.ts(employees.training)
+fit <- lm(employees.training ~ as.numeric(1:length(employees.training)))
+abline(fit, col="red")
+abline(h=mean(employees), col="blue")
+```
+
+#### Histogram
+
+And we will also plot out the histogram to verify the variance
+
+```{r}
+hist(employees.training, col="light blue", xlab="", main="histogram; employee data")
+```
+
+And indeed, we see that the histogram skewed a little. And we can treat it as constant variance. So we dont need a transformation.
+
+#### Histogram of Raw Data
+
+We also plot out the ACF to check seasonality and trend
+
+```{r}
+acf(employees.training,lag.max=40, main="ACF of the Airpass Data")
+```
+
+And indeed, ACFs remain large and periodic (a little), so we might consider differencing.
+
+### Transformation and Differencing
+
+#### Transformation
+
+As stated in the previous section, no transformation required for this dataset
+
+#### Differencing
+
+We will first make a decomposition of the time series
+
+```{r}
+library(ggplot2)
+library(ggfortify)
+y <- ts(employees.training, frequency = 12)
+decomp <- decompose(y)
+plot(decomp)
+```
+
+we see that a decomposition of the time series shows seasonality and a linear trend, despite a small drop at 2008-2009. Therefore, we will difference the data.
+
+```{r}
+var(employees.training)[1]
+```
+Our time series has variance of 40626.52, now differencing at lag 12
+
+```{r}
+employees_lag12 <- diff(employees.training,lag = 12)
+plot.ts(employees_lag12, main="U_t differenced at lag 12")
+fit <- lm(employees_lag12 ~ as.numeric(1:length(employees_lag12)))
+abline(fit, col="red")
+abline(h=mean(employees_lag12), col="blue")
+var(employees_lag12)
+```
+
+And now the variance is 979, which is significantly lower. But we still have large variance and a non-zero mean. The ACF of the differenced series at lag 12 looks like 
+
+```{r}
+acf(employees_lag12, lag.max=40, main="ACF of the U_t, differenced at lag 12")
+```
+
+We see that seasonality no longer apparent, and the ACFs are decaying slowly, meaning that the series is still non stationary.
+
+We continue differencing at lag 1,
+
+```{r}
+employees_stat <- diff(employees_lag12,lag = 1)
+plot.ts(employees_stat, main="U_t differenced at lag 12 & lag 1")
+fit <- lm(employees_stat ~ as.numeric(1:length(employees_stat)))
+abline(fit, col="red")
+abline(h=mean(employees_stat), col="blue")
+var(employees_stat)
+```
+
+We see that now the variance is only 47.71, and the plot looks stationary, with constant mean and variance and looks like white noise. So we achieved our purpose. We further verify this observation by historgram.
+
+```{r}
+hist(employees_stat, density=20,breaks=20, col="blue", xlab="", prob=TRUE)
+m<-mean(employees_stat)
+std<- sqrt(var(employees_stat))
+curve( dnorm(x,m,std), add=TRUE )
+```
+
+The histogram looks much more normal. We will show the ACF and PACF on the next section.
+
+#### Plot and analyze ACF and PACF to preliminary identify your models
+
+```{r}
+acf(employees_stat, lag.max=40, main="ACF of the U_t, differenced at lags 12 and 1")
+```
+
+The ACFs outside of of the confidence interval are at **lag 2, 5, 12**
+
+```{r}
+pacf(employees_stat, lag.max=40, main="PACF of the U_t, differenced at lags 12 and 1")
+```
+
+The PACFs outside of of the confidence interval are at **lag 2, 5, 12, 22, 24**. We can choose model parameters as follows. Notice that there seem to be an exponential decay at lag 12, 24, 36, so we choose $Q = 0$
+
+$$
+p = 0,2,5 \quad d = 1 \quad q = 0,2,5 \quad P = 1 \quad D = 1 \quad Q = 0 \quad s = 12
+$$
+
+#### Model Fitting
+
+Our strategy of finding two best models is to run a loop for all parameters and sort out the two models with Lowest AICc value.
+
+```{r}
+library(qpcR)
+print("p d q P D Q")
+for (p in c(0,2,5)){
+    for (d in c(1)){
+        for (q in c(0,2,5)){
+            for (P in c(0,1)){
+                for (D in c(1)){
+                    for (Q in c(0,1)){
+                        print(c(p,d,q,P,D,Q))
+                        print(AICc(arima(employees.training,order = c(p,d,q),seasonal = list(order = c(P,D,Q), period = 12), method="ML"))) 
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+Below are three models with the least AICc values, we can see that there AICc values are very close, and parameters are also similar.
+
+$$
+\operatorname{SARIMA}(5,1,2)\times(0,1,1)_{12}\\
+\operatorname{SARIMA}(2,1,2)\times(0,1,1)_{12}\\
+$$
+
+##### Model 1 $\operatorname{SARIMA}(5,1,2)\times(1,1,0)_{12}$
+
+```{r}
+model1 <- arima(employees.training,order = c(5,1,2),seasonal = list(order = c(0,1,1), period = 12), method="ML")
+model1
+```
+
+And we see that 0 is in the confidence interval of ar2, ar3, ar4, ar5, ma2, so we run
+
+```{r}
+AICc(model1)
+AICc(arima(employees.training,order = c(5,1,2),seasonal = list(order = c(0,1,1), period = 12), method="ML",fixed= c(NA,0,0,0,0,NA,0,NA)))
+```
+
+But this does not decrease the AICc, so we will stick to our original model.
+
+##### Model 2 $\operatorname{SARIMA}(2,1,2)\times(1,1,0)_{12}$
+
+```{r}
+model2 <- arima(employees.training,order = c(2,1,2),seasonal = list(order = c(1,1,0), period = 12), method="ML")
+model2
+```
+
+And we see that 0 is in the confidence interval of ma2, so we run
+
+```{r}
+AICc(model2)
+AICc(arima(employees.training,order = c(2,1,2),seasonal = list(order = c(1,1,0), period = 12),fixed = c(NA,NA,0,0,NA), method="ML"))
+```
+
+Again, fixing parameter did not decrease AICc, so we will stick to our original model.
+
+#### Diagonstics for model 1
+
+The equation for the first model is 
+
+$$
+\left(1-\phi_1 B-\phi_2 B^2-\phi_3 B^3-\phi_4 B^4-\phi_5 B^5\right)\left(1-\Phi_{1} B^{12}\right)(1-B)\left(1-B^{12}\right) y_t=\left(1+\theta_1 B+\theta_2 B^2\right) Z_t
+$$
+
+substituting the parameters, we have
+
+$$
+\left(1-0.8938 B+0.0710 B^2+0.0136 B^3-0.0108 B^4-0.0732 B^5\right)\left(1+0.7474 B^{12}\right)(1-B)\left(1-B^{12}\right) y_t=\left(1-0.9494 B+0.2416 B^2\right) Z_t
+$$
+
+##### Stationarity
+
+```{r}
+source("plot.roots.R")
+plot.roots(NULL,polyroot(c(1, -0.8398, 0.0710, 0.0136,-0.0108,-0.0732)), main="Model 1, roots of AR part, nonseasonal ")
+```
+
+Clearly, all AR roots are outside of unit circle, but we also have $|\Phi_1| <1$ so the model is stationary.
+
+##### Invertibility
+
+```{r}
+plot.roots(NULL,polyroot(c(1, -0.9494,0.2416)), main="Model 1, roots of ma part, nonseasonal ")
+```
+
+
+
+Clearly, all MA (seasonal and non seasonal) roots are outside of unit circle, so the model is invertible.
+
+##### Analyzing the Residues
+
+We first look at the histogram of the Residues
+
+```{r}
+model1_res <- residuals(model1)
+hist(model1_res,density=20,breaks=20, col="blue", xlab="Histogram of Residues", prob=TRUE)
+m1 <- mean(model1_res)
+std1 <- sqrt(var(model1_res))
+curve(dnorm(x,m1,std1), add=TRUE )
+```
+
+Which looks pretty normal, despite a larger peak at the center. Next we will plot out the Residues
+
+```{r}
+mean(model1_res)
+plot.ts(model1_res)
+fit_res_1 <- lm(model1_res ~ as.numeric(1:length(model1_res))) 
+abline(fit_res_1, col="red")
+abline(h=mean(model1_res), col="blue")
+```
+
+The mean is just 0.25 which is very close to 0. 
+
+Now we plot out a QQ Plot for the Residues
+
+```{r}
+qqnorm(model1_res,main= "Normal Q-Q Plot for Model 1")
+qqline(model1_res,col="blue")
+```
+
+which aligns quite well on a straight line.
+
+We see that from the above plots, **there is no trend, and no visible change of variance, and no seasonality, and the sample mean = 0.25 is almost zero. The histogram and the QQ plot looks okay.**
+
+Now, we will plot out ACF and PACF of the Residues
+
+```{r}
+acf(model1_res, lag.max=40)
+```
+
+```{r}
+pacf(model1_res, lag.max=40)
+```
+
+All acf and pacf of residuals **are within confidence intervals** (except acf at lag 15 and 21 but they are negiglible) and can be counted as zeros.
+
+Now we will check if this model can pass the tests.
+
+##### Shapiro-Wilk Normality Test
+
+```{r}
+shapiro.test(model1_res)
+```
+
+Since the p-value is within the significant level, the model fails the shapiro wilk normality test.
+
+##### Box-Pierce test
+
+With degree of freedom $12 -(5+2) = 7$,
+
+```{r}
+Box.test(model1_res, lag = 12, type = c("Box-Pierce"), fitdf = 7)
+```
+
+We see that the model passes the Box-Pierce test, p-value is larger than significant level
+
+##### Box-Ljung test
+
+```{r}
+Box.test(model1_res, lag = 12, type = c("Ljung-Box"), fitdf = 7)
+```
+
+We see that the model passes the Box-Ljung test, p-value is larger than significant level. 
+
+##### Mc-Leod Li test
+
+```{r}
+Box.test((model1_res)^2, lag = 12, type = c("Ljung-Box"), fitdf = 0)
+```
+
+the model fails the mc-leod Li test.
+
+##### Yule-Walker (or MLE) estimation
+
+```{r}
+ar(model1_res, aic = TRUE, order.max = NULL, method = c("yule-walker"))
+```
+
+Fitted residuals to AR(0), i.e. WN.
+
+So the model passes all the test but **mc-leod Li** and **Shapiro-Wilk Normality Test**
+
+#### Diagonstics for model 2
+
+The equation for the second model is 
+
+$$
+\left(1-\phi_1 B-\phi_2 B^2\right)\left(1-\Phi_{12} B^{12}\right)(1-L)\left(1-B^{12}\right) y_t=\left(1+\theta_1 B+\theta_2 B^2\right) Z_t
+$$
+
+substituting the parameters, we have
+
+$$
+\left(1-0.5338 B-0.3358 B^2\right)\left(1+0.5004 B^{12}\right)(1-L)\left(1-B^{12}\right) y_t=\left(1-0.5788 B-0.1315 B^2\right) Z_t
+$$
+
+##### Stationarity
+
+```{r}
+plot.roots(NULL,polyroot(c(1, -0.5338, -0.3358)), main="Model 1, roots of AR part, nonseasonal ")
+```
+
+Clearly, all AR roots are outside of unit circle, but we also have $|\Phi_1| <1$ so the model is stationary.
+
+##### Invertibility
+
+```{r}
+plot.roots(NULL,polyroot(c(1, -0.5788,-0.1315)), main="Model 1, roots of MA part, nonseasonal ")
+```
+
+Clearly, all MA roots are outside of unit circle, so the model is invertible.
+
+##### Analyzing the Residues
+
+We first look at the histogram of the Residues
+
+```{r}
+model2_res <- residuals(model2)
+hist(model2_res,density=20,breaks=20, col="blue", xlab="Histogram of Residues", prob=TRUE)
+m1 <- mean(model2_res)
+std1 <- sqrt(var(model2_res))
+curve(dnorm(x,m1,std1), add=TRUE )
+```
+
+Which looks pretty normal, despite a larger peak at the center. Next we will plot out the Residues
+
+```{r}
+mean(model2_res)
+plot.ts(model2_res)
+fit_res_1 <- lm(model2_res ~ as.numeric(1:length(model2_res))) 
+abline(fit_res_1, col="red")
+abline(h=mean(model2_res), col="blue")
+```
+
+The mean is just 0.135 which is very close to 0. 
+
+Now we plot out a QQ Plot for the Residues
+
+```{r}
+qqnorm(model2_res,main= "Normal Q-Q Plot for Model 1")
+qqline(model2_res,col="blue")
+```
+
+which aligns quite well on a straight line.
+
+We see that from the above plots, **there is no trend, and no visible change of variance, and no seasonality, and the sample mean = 0.13 is almost zero. The histogram and the QQ plot looks okay.**
+
+Now, we will plot out ACF and PACF of the Residues
+
+```{r}
+acf(model2_res, lag.max=40)
+```
+
+```{r}
+pacf(model2_res, lag.max=40)
+```
+
+All acf and pacf of residuals **are within confidence intervals** (except at lag 12 and 24), this means that there is seasonality in the residues.
+
+Now we will check if this model can pass the tests.
+
+##### Shapiro-Wilk Normality Test
+
+```{r}
+shapiro.test(model2_res)
+```
+
+Since the p-value is within the significant level, the model fails the shapiro wilk normality test.
+
+##### Box-Pierce test
+
+With degree of freedom $12 -(5+2) = 7$,
+
+```{r}
+Box.test(model2_res, lag = 12, type = c("Box-Pierce"), fitdf = 4)
+```
+
+We see that the model fails the Box-Pierce test
+
+##### Box-Ljung test
+
+```{r}
+Box.test(model2_res, lag = 12, type = c("Ljung-Box"), fitdf = 4)
+```
+
+We see that the model fails the Box-Ljung test.
+
+##### Mc-Leod Li test
+
+```{r}
+Box.test((model2_res)^2, lag = 12, type = c("Ljung-Box"), fitdf = 0)
+```
+
+the model fails the mc-leod Li test.
+
+##### Yule-Walker (or MLE) estimation
+
+```{r}
+ar(model2_res, aic = TRUE, order.max = NULL, method = c("yule-walker"))
+```
+
+Did not fitted residuals to AR(0), i.e. WN.
+
+So the model 2 **fails all the tests** 
+
+#### Conclusion for diagnostics
+
+We have model 1 passes all the test but **Mc-leod Li** and **Shapiro-Wilk Normality Test**. And model 2 fails all the tests. Notice that 
+
+    Besides model 1, and model 2, I have ran the diagnostics with all top 10 models with lowest AICc values and none of them passes the Mc-Leod Li test and the Shapiro-Wilk Normality Test. This may due to the fact that there is a sequence of anomaly datapoint between 2008 and 2009, causing deviation in fitting the model, and therefore failing the Mc-leod Li and Shapiro-Wilk Normality Test.
+
+Therefore, I will choose model 1 as my final model, since it has a lowest AICc value, and passes most of the tests.
+
+$$
+\operatorname{SARIMA}(5,1,2)\times(0,1,1)_{12}\\
+$$
+
+as our final model, where 
+
+$$
+\left(1-0.8938 B+0.0710 B^2+0.0136 B^3-0.0108 B^4-0.0732 B^5\right)\left(1+0.7474 B^{12}\right)(1-B)\left(1-B^{12}\right) y_t=\left(1-0.9494 B+0.2416 B^2\right) Z_t
+$$
+
+### Forcasting with final model
+
+Now we will try to forecast two year (24 datapoints) using our final model, we use red circles to denote the forecast values and blue dashed lines as our confidence interval
+
+```{r}
+library(forecast)
+pred.tr <- predict(model1, n.ahead = 24)
+U.tr= pred.tr$pred + 2*pred.tr$se
+L.tr= pred.tr$pred - 2*pred.tr$se
+ts.plot(employees.training, xlim=c(1,length(employees.training)+12), ylim = c(min(employees.training),max(U.tr)))
+lines(U.tr, col="blue", lty="dashed")
+lines(L.tr, col="blue", lty="dashed")
+points((length(employees.training)+1):(length(employees.training)+24), pred.tr$pred, col="red")
+```
+
+Which looks pretty good, we can further verify if our testing data is within the confidence interval with a zoomed view.
+
+```{r}
+ts.plot(employees, xlim = c(240,length(employees.training)+24), ylim = c(1400,max(U.tr)), col="red")
+lines(U.tr, col="blue", lty="dashed")
+lines(L.tr, col="blue", lty="dashed")
+points((length(employees.training)+1):(length(employees.training)+24),  pred.tr$pred , col="black")
+```
+
+As we can see, the forecast values are now black circles, and the red line is the true values. We see that **the test set is within the confidence interval**. Even though that the model constantly **underestimated** the values in the forecast.
+
+
+### Spectral Analysis
+
